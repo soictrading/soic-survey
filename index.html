@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SOIC Sales Flow Survey</title>
+    <link rel="stylesheet" href="/src/web/styles.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div class="in">
+        <div class="brand">SOIC <small id="h-sub">Sales flow interview</small></div>
+        <div class="row">
+          <div class="parts" id="parts" hidden><span id="p-load">1</span><span id="p-buyer">2</span></div>
+          <button class="linkish" id="to-admin" type="button" hidden>All interviews</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <div id="banner" class="err" role="alert" hidden></div>
+
+      <section id="v-boot" data-view class="panel"><p class="notice">Loading… / Cargando…</p></section>
+
+      <section id="v-lang" data-view class="stack" hidden>
+        <div class="panel">
+          <h1>Sales flow interview<br /><span class="muted">Entrevista de flujo de ventas</span></h1>
+          <p class="lede">An interviewer will ask you, one question at a time, exactly what you do in two situations: when a load becomes available, and when a buyer needs a load. You can stop at any time; your answers are saved.</p>
+          <p class="lede">Un entrevistador te preguntará, una pregunta a la vez, qué haces exactamente en dos situaciones: cuando hay una carga disponible y cuando un comprador necesita una carga. Puedes parar cuando quieras; tus respuestas se guardan.</p>
+          <p class="notice">Only you and Mike Chartrand can see your answers. / Solo tú y Mike Chartrand pueden ver tus respuestas.</p>
+          <div class="langs">
+            <button class="btn" id="lang-en" type="button">English</button>
+            <button class="btn" id="lang-es" type="button">Español</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="v-interview" data-view class="stack" hidden>
+        <div class="stack">
+          <p class="eyebrow" id="iv-eyebrow"></p>
+          <h1 id="iv-title"></h1>
+          <p class="lede" id="iv-desc"></p>
+        </div>
+        <div class="panel" id="iv-start" hidden>
+          <p id="iv-how"></p>
+          <p class="notice" id="iv-private"></p>
+          <div class="row"><button class="btn" id="iv-begin" type="button"></button></div>
+        </div>
+        <div class="log" id="log" aria-live="polite"></div>
+        <div class="row" id="iv-retry" hidden><button class="btn quiet" id="iv-retry-btn" type="button"></button></div>
+        <div class="composer" id="composer" hidden>
+          <label for="answer" class="hint" id="answer-label"></label>
+          <textarea id="answer" rows="3"></textarea>
+          <div class="row spread">
+            <button class="linkish" id="finish-open" type="button"></button>
+            <button class="btn" id="send" type="button"></button>
+          </div>
+          <div class="confirm" id="finish-confirm" hidden>
+            <p id="finish-q"></p>
+            <div class="row">
+              <button class="btn" id="finish-yes" type="button"></button>
+              <button class="btn quiet" id="finish-no" type="button"></button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="v-review" data-view class="stack" hidden>
+        <div class="stack">
+          <p class="eyebrow" id="rv-eyebrow"></p>
+          <h1 id="rv-title"></h1>
+          <p class="lede" id="rv-desc"></p>
+        </div>
+        <div class="panel" id="rv-working" hidden>
+          <p class="notice" id="rv-working-msg"></p>
+          <div class="row" id="rv-again-row" hidden><button class="btn" id="rv-again" type="button"></button></div>
+        </div>
+        <div class="panel" id="rv-body" hidden>
+          <div class="field"><label for="rv-examples" id="rv-examples-l"></label><input type="text" id="rv-examples" /></div>
+          <div class="steps" id="rv-steps"></div>
+          <div class="row"><button class="btn ghost" id="rv-add" type="button"></button></div>
+          <div class="field"><label for="rv-var" id="rv-var-l"></label><textarea id="rv-var"></textarea></div>
+          <div class="field"><label for="rv-pain" id="rv-pain-l"></label><textarea id="rv-pain"></textarea></div>
+          <div class="field"><label for="rv-corr" id="rv-corr-l"></label><textarea id="rv-corr"></textarea></div>
+          <p class="notice" id="rv-saved" aria-live="polite"></p>
+          <div class="row"><button class="btn" id="rv-confirm" type="button"></button></div>
+        </div>
+      </section>
+
+      <section id="v-done" data-view class="stack" hidden>
+        <div class="panel">
+          <h1 id="dn-title"></h1>
+          <p class="lede" id="dn-desc"></p>
+          <div class="row">
+            <button class="btn quiet" id="dn-edit-load" type="button"></button>
+            <button class="btn quiet" id="dn-edit-buyer" type="button"></button>
+          </div>
+        </div>
+      </section>
+
+      <section id="v-admin" data-view class="stack" hidden>
+        <div class="stack">
+          <h1>Sales flow interviews</h1>
+          <p class="lede">Each person's step-by-step flow for a load becoming available (Part 1) and a buyer needing a load (Part 2).</p>
+          <div class="row">
+            <button class="btn ghost" id="ad-self" type="button">Take the interview yourself</button>
+            <button class="btn quiet" id="ad-refresh" type="button">Refresh</button>
+          </div>
+        </div>
+        <div class="panel">
+          <p class="notice" id="ad-empty">No one has started yet. Interviews appear here as soon as someone picks a language.</p>
+          <div class="tbl-wrap" id="ad-tbl-wrap" hidden>
+            <table>
+              <thead><tr><th>Person</th><th>Lang</th><th>Part 1 · Load available</th><th>Part 2 · Buyer need</th><th>Last activity</th></tr></thead>
+              <tbody id="ad-rows"></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="ad-detail" class="stack"></div>
+      </section>
+    </main>
+    <script type="module" src="/src/web/main.ts"></script>
+  </body>
+</html>

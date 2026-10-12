@@ -1,0 +1,76 @@
+// Cloudflare Worker configuration for the SOIC sales flow survey.
+// Top level = local development only. Deploy with `--env staging` or `--env production`.
+// Vars and bindings are NOT inherited by environments; each environment declares its own.
+// Secret (never in this file): ANTHROPIC_API_KEY, set with `wrangler secret put ANTHROPIC_API_KEY --env <env>`.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "soic-survey",
+  // SOIC Cloudflare account. Commands fail rather than run against any other account.
+  "account_id": "536b9e65d593d1aed42b4deb34cff2fb",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2026-08-15",
+  "workers_dev": false,
+  "preview_urls": false,
+  "observability": { "enabled": true },
+  "assets": {
+    "directory": "./dist/client",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "vars": {
+    "ENVIRONMENT": "development",
+    "ADMIN_EMAILS": "mike.chartrand@soictrading.com",
+    "ANTHROPIC_MODEL": "claude-sonnet-5-5"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "soic-survey-local",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "env": {
+    "staging": {
+      "workers_dev": false,
+      "preview_urls": false,
+      "routes": [{ "pattern": "survey-staging.soictrading.online", "custom_domain": true }],
+      "vars": {
+        "ENVIRONMENT": "staging",
+        "ACCESS_TEAM_DOMAIN": "https://late-sky-cf77.cloudflareaccess.com",
+        "ACCESS_AUD": "REPLACE_WITH_STAGING_APPLICATION_AUD",
+        "ADMIN_EMAILS": "mike.chartrand@soictrading.com",
+        "ANTHROPIC_MODEL": "claude-sonnet-5-5"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "soic-survey-staging",
+          "database_id": "REPLACE_WITH_STAGING_DATABASE_ID",
+          "migrations_dir": "migrations"
+        }
+      ]
+    },
+    "production": {
+      "workers_dev": false,
+      "preview_urls": false,
+      "routes": [{ "pattern": "survey.soictrading.online", "custom_domain": true }],
+      "vars": {
+        "ENVIRONMENT": "production",
+        "ACCESS_TEAM_DOMAIN": "https://late-sky-cf77.cloudflareaccess.com",
+        "ACCESS_AUD": "REPLACE_WITH_PRODUCTION_APPLICATION_AUD",
+        "ADMIN_EMAILS": "mike.chartrand@soictrading.com",
+        "ANTHROPIC_MODEL": "claude-sonnet-5-5"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "soic-survey-production",
+          "database_id": "REPLACE_WITH_PRODUCTION_DATABASE_ID",
+          "migrations_dir": "migrations"
+        }
+      ]
+    }
+  }
+}

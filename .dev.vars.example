@@ -1,0 +1,4 @@
+# Local development only. Copy to .dev.vars (never commit .dev.vars).
+DEV_USER_EMAIL=mike.chartrand@soictrading.com
+# Your own Anthropic API key for local testing. Leave empty to test everything except the interviewer.
+ANTHROPIC_API_KEY=
