@@ -39,7 +39,7 @@
       "vars": {
         "ENVIRONMENT": "production",
         "ACCESS_TEAM_DOMAIN": "https://late-sky-cf77.cloudflareaccess.com",
-        "ACCESS_AUD": "REPLACE_WITH_PRODUCTION_APPLICATION_AUD",
+        "ACCESS_AUD": "dc4b3419091d88f0e24ca1b798133d86d1bc9f5a34696cfcfa37c6e4186ac7d1",
         "ADMIN_EMAILS": "mike.chartrand@soictrading.com",
         "ANTHROPIC_MODEL": "claude-sonnet-5-5"
       },
@@ -47,7 +47,7 @@
         {
           "binding": "DB",
           "database_name": "soic-survey-production",
-          "database_id": "REPLACE_WITH_PRODUCTION_DATABASE_ID",
+          "database_id": "ca958d5d-1646-4861-8323-f1d90b99a217",
           "migrations_dir": "migrations"
         }
       ]
