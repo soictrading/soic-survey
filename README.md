@@ -50,16 +50,16 @@ larger call per write-up. The model is set by `ANTHROPIC_MODEL` in `wrangler.jso
 **Logging.** Workers Logs record each model call's duration and token counts, and every error, with a request id.
 Interview content and the API key are never logged.
 
-**Environments.** `wrangler.jsonc` defines three:
+**Environments.** `wrangler.jsonc` defines two:
 
 | Environment | Hostname | Database | Identity |
 |---|---|---|---|
 | development (top level) | `localhost` only | local D1 | `DEV_USER_EMAIL` from `.dev.vars` |
-| staging | `survey-staging.soictrading.online` | `soic-survey-staging` | Cloudflare Access |
 | production | `survey.soictrading.online` | `soic-survey-production` | Cloudflare Access |
 
-`workers.dev` and preview URLs are disabled so Access cannot be bypassed. The Worker refuses to run while the Access
-settings are missing or still placeholders.
+There is no staging copy: this tool deploys straight to production (Mike, 2026-10-12). `workers.dev` and preview
+URLs are disabled so Access cannot be bypassed. The Worker refuses to run while the Access settings are missing or
+still placeholders.
 
 ## Requirements
 
@@ -84,7 +84,7 @@ npm run check
 
 ## Deployment runbook
 
-Do these steps in order. Staging first; production only after staging has been tested and approved.
+Do these steps in order.
 
 ### 1. GitHub
 
@@ -95,81 +95,81 @@ Do these steps in order. Staging first; production only after staging has been t
    git push -u origin main
    ```
 
-### 2. Log in to Cloudflare
+### 2. Install and log in to Cloudflare
 
 ```sh
+npm ci
 unset CLOUDFLARE_API_TOKEN
 npx wrangler login
 ```
 
-### 3. Create the staging database
+### 3. Create the database
 
 ```sh
-npx wrangler d1 create soic-survey-staging
+npx wrangler d1 create soic-survey-production
 ```
 
-Copy the `database_id` it prints into `wrangler.jsonc` → `env.staging.d1_databases[0].database_id`.
+Copy the `database_id` it prints into `wrangler.jsonc` → `env.production.d1_databases[0].database_id`.
 
 ### 4. Create the Access application (before the first deploy)
 
 In the Cloudflare dashboard → **Zero Trust** → **Access → Applications → Add an application → Self-hosted**:
 
-- Application domain: `survey-staging.soictrading.online`
+- Application domain: `survey.soictrading.online`
 - Identity providers: One-time PIN
-- Policy: action **Allow**, include the people who should take the survey (for example **Emails ending in**
-  `@soictrading.com`, as the CRM does, or a list of specific emails)
+- Policy: action **Allow**, include **Emails ending in** `@soictrading.com` (the same policy as the CRM)
 
 Save, then open the application and copy its **Application Audience (AUD) Tag** into `wrangler.jsonc` →
-`env.staging.vars.ACCESS_AUD`. The team domain is already filled in (the same one the CRM uses). These values are
+`env.production.vars.ACCESS_AUD`. The team domain is already filled in (the same one the CRM uses). These values are
 identifiers, not secrets. Commit the updated `wrangler.jsonc`.
 
 ### 5. Apply the schema
 
 ```sh
-npx wrangler d1 migrations apply DB --env staging --remote
+npx wrangler d1 migrations apply DB --env production --remote
 ```
 
 ### 6. Store the Anthropic API key as a secret
 
 ```sh
-npx wrangler secret put ANTHROPIC_API_KEY --env staging
+npx wrangler secret put ANTHROPIC_API_KEY --env production
 ```
 
 Paste the key when asked. It is stored encrypted in Cloudflare and never appears in this repository, the browser or
 the logs. Never paste it anywhere else.
 
-### 7. Deploy staging
+### 7. Deploy
 
 ```sh
-npm run deploy:staging
+npm run deploy:production
 ```
 
-This runs every check first. On the first deploy Cloudflare creates the `survey-staging.soictrading.online` DNS record.
+This runs every check first. On the first deploy Cloudflare creates the `survey.soictrading.online` DNS record.
 
-### 8. Test staging
+### 8. Test before sharing the link
 
-1. Open `https://survey-staging.soictrading.online`. You should get the Cloudflare Access login.
+1. Open `https://survey.soictrading.online`. You should get the Cloudflare Access login.
 2. Sign in with `mike.chartrand@soictrading.com`. You should see **Sales flow interviews** with no one listed.
 3. Press **Take the interview yourself**, choose a language and press **Start**. The interviewer's first question
    should appear within a few seconds. Answer a few questions, then use **I've covered everything for this part**.
 4. Check the write-up appears, edit a step, reload the page (the edit should still be there) and confirm.
 5. Go back to **All interviews**: you should see yourself with Part 1 confirmed, and the transcript under your name.
-6. Sign in from another browser with a different allowed address: that person must see only the language choice
-   (not your interview), and must not be able to open the overview.
+6. Sign in from another browser with a different `@soictrading.com` address: that person must see only the language
+   choice (not your interview), and must not be able to open the overview.
 
-### Updating an environment later
+Your own test interview stays in the overview. To remove it before the team starts:
+
+```sh
+npx wrangler d1 execute DB --env production --remote --command "DELETE FROM interview_messages WHERE email = 'mike.chartrand@soictrading.com'; DELETE FROM interview_parts WHERE email = 'mike.chartrand@soictrading.com'; DELETE FROM interviews WHERE email = 'mike.chartrand@soictrading.com';"
+```
+
+### Updating later
 
 When a release adds a file to `migrations/`, apply it **before** deploying the code that needs it:
 
 ```sh
 unset CLOUDFLARE_API_TOKEN            # in every new Terminal window
-npx wrangler d1 migrations list DB --env staging --remote    # shows what will be applied
-npx wrangler d1 migrations apply DB --env staging --remote
-npm run deploy:staging
+npx wrangler d1 migrations list DB --env production --remote    # shows what will be applied
+npx wrangler d1 migrations apply DB --env production --remote
+npm run deploy:production
 ```
-
-### 9. Production
-
-Only after staging is approved: repeat steps 3–8 with `soic-survey-production`, `survey.soictrading.online`,
-`env.production`, `--env production` and `npm run deploy:production`. Use a **separate** Access application for the
-production hostname (it has its own AUD tag), and set the secret again for production.

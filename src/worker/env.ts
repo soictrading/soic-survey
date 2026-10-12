@@ -13,6 +13,6 @@ export interface Env {
   ADMIN_EMAILS?: string;
   /** Anthropic model id used for the interviewer and the write-ups. */
   ANTHROPIC_MODEL?: string;
-  /** Secret. Set with `wrangler secret put ANTHROPIC_API_KEY --env <env>`; never in wrangler.jsonc. */
+  /** Secret. Set with `wrangler secret put ANTHROPIC_API_KEY --env production`; never in wrangler.jsonc. */
   ANTHROPIC_API_KEY?: string;
 }
